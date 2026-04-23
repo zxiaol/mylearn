@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum UserRole {
+  STUDENT
+  GUARDIAN
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  FILL_BLANK
+  PHOTO_SOLUTION
+}
+
+enum WeaknessStatus {
+  WEAK
+  MASTERED
+}
+
+enum TutorStage {
+  EXPLAIN
+  PRACTICE
+  SUMMARY
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  role         UserRole
+  nickname     String
+  region       String
+  createdAt    DateTime @default(now())
+
+  studentProfile  StudentProfile?
+  guardianBindings GuardianBinding[] @relation("guardianBindings")
+  studentBindings  GuardianBinding[] @relation("studentBindings")
+  bindCodes        BindCode[]
+}
+
+model StudentProfile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  term             String
+  currentChapterId String
+  createdAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model GuardianBinding {
+  id         String   @id @default(cuid())
+  guardianId String
+  studentId  String
+  createdAt  DateTime @default(now())
+
+  guardian User @relation("guardianBindings", fields: [guardianId], references: [id])
+  student  User @relation("studentBindings", fields: [studentId], references: [id])
+
+  @@unique([guardianId, studentId])
+}
+
+model BindCode {
+  id        String   @id @default(cuid())
+  studentId String
+  code      String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  student User @relation(fields: [studentId], references: [id])
+}
+
+model Book {
+  id      String    @id @default(cuid())
+  name    String    @unique
+  chapters Chapter[]
+}
+
+model Chapter {
+  id     String @id @default(cuid())
+  bookId String
+  order  Int
+  title  String
+
+  book            Book            @relation(fields: [bookId], references: [id])
+  knowledgePoints KnowledgePoint[]
+}
+
+model KnowledgePoint {
+  id        String @id @default(cuid())
+  chapterId String
+  code      String
+  title     String
+
+  chapter Chapter @relation(fields: [chapterId], references: [id])
+
+  @@unique([chapterId, code])
+}
+
+model Prerequisite {
+  id                   String @id @default(cuid())
+  fromKnowledgePointId String
+  toKnowledgePointId   String
+}
+
+model Question {
+  id        String       @id @default(cuid())
+  chapterId String
+  type      QuestionType
+  stem      String
+  optionsJson   String?
+  answerKeyJson String
+  analysis      String
+  difficulty    Int
+
+  knowledgePointIdsJson String
+  abilityTagsJson       String
+  source               String
+  usage                String
+
+  createdAt DateTime @default(now())
+}
+
+model QuizAttempt {
+  id         String   @id @default(cuid())
+  studentId  String
+  chapterId  String
+  startedAt  DateTime @default(now())
+  finishedAt DateTime?
+
+  totalScore  Int @default(0)
+  maxScore    Int @default(0)
+  durationSec Int @default(0)
+
+  items Answer[]
+}
+
+model Answer {
+  id           String       @id @default(cuid())
+  attemptId    String
+  questionId   String
+  type         QuestionType
+  valueText    String?
+  photoUrlsJson String?
+  gradedJson   String?
+  isCorrect    Boolean?
+  score        Int?
+  maxScore     Int?
+  durationSec  Int          @default(0)
+
+  attempt QuizAttempt @relation(fields: [attemptId], references: [id])
+}
+
+model Weakness {
+  id              String         @id @default(cuid())
+  studentId        String
+  chapterId        String
+  knowledgePointId String
+  abilityTag       String
+  status           WeaknessStatus
+  lastUpdatedAt    DateTime      @updatedAt
+
+  @@unique([studentId, chapterId, knowledgePointId, abilityTag])
+}
+
+model TutoringSession {
+  id         String     @id @default(cuid())
+  studentId  String
+  weaknessId String     @unique
+  stage      TutorStage @default(EXPLAIN)
+  round      Int        @default(1)
+  explanation String
+  exampleQuestionId String
+  practiceQuestionIdsJson String
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  answers TutoringAnswer[]
+}
+
+model TutoringAnswer {
+  id         String   @id @default(cuid())
+  sessionId  String
+  questionId String
+  valueText  String?
+  isCorrect  Boolean?
+  score      Int?
+  maxScore   Int?
+  gradedJson String?
+  createdAt  DateTime @default(now())
+
+  session TutoringSession @relation(fields: [sessionId], references: [id])
+
+  @@unique([sessionId, questionId])
+}

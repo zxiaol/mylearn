@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+.DS_Store
+npm-debug.log*
+yarn-error.log*
+test-results
+playwright-report
+storage/uploads
+dev.db
+prisma/dev.db
+prisma/dev.db-journal
+.env
+.env.local
+

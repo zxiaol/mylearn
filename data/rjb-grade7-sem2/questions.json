@@ -1,0 +1,78 @@
+[
+  {
+    "chapterOrder": 1,
+    "type": "SINGLE_CHOICE",
+    "stem": "下列各式中，表示 9 的算术平方根的是（ ）",
+    "options": ["3", "-3", "±3", "√9"],
+    "answerKey": { "correctOptionIndex": 0 },
+    "analysis": "算术平方根为非负数，9 的算术平方根是 3。",
+    "difficulty": 2,
+    "knowledgePointCodes": ["7B-CH06-KP01"],
+    "abilityTags": ["概念辨析"],
+    "usage": "diagnostic",
+    "source": "bank"
+  },
+  {
+    "chapterOrder": 1,
+    "type": "FILL_BLANK",
+    "stem": "填空：\\(\\sqrt{16}=\\) ____。",
+    "answerKey": { "accepted": ["4"] },
+    "analysis": "16 的算术平方根为 4。",
+    "difficulty": 1,
+    "knowledgePointCodes": ["7B-CH06-KP01"],
+    "abilityTags": ["计算"],
+    "usage": "diagnostic",
+    "source": "bank"
+  },
+  {
+    "chapterOrder": 1,
+    "type": "SINGLE_CHOICE",
+    "stem": "下列说法正确的是（ ）",
+    "options": ["\\(\\sqrt{(-4)^2}=-4\\)", "\\(\\sqrt{(-4)^2}=4\\)", "\\(\\sqrt{-16}=4\\)", "\\((-4)^2=-16\\)"],
+    "answerKey": { "correctOptionIndex": 1 },
+    "analysis": "\\((-4)^2=16\\)，其算术平方根为 4。",
+    "difficulty": 2,
+    "knowledgePointCodes": ["7B-CH06-KP01"],
+    "abilityTags": ["概念辨析"],
+    "usage": "diagnostic",
+    "source": "bank"
+  },
+  {
+    "chapterOrder": 1,
+    "type": "FILL_BLANK",
+    "stem": "填空：\\(\\sqrt[3]{-8}=\\) ____。",
+    "answerKey": { "accepted": ["-2"] },
+    "analysis": "立方根允许为负数，\\(\\sqrt[3]{-8}=-2\\)。",
+    "difficulty": 2,
+    "knowledgePointCodes": ["7B-CH06-KP02"],
+    "abilityTags": ["计算"],
+    "usage": "diagnostic",
+    "source": "bank"
+  },
+  {
+    "chapterOrder": 2,
+    "type": "SINGLE_CHOICE",
+    "stem": "在平面直角坐标系中，点 A(2,3) 到 y 轴的距离是（ ）",
+    "options": ["2", "3", "5", "√13"],
+    "answerKey": { "correctOptionIndex": 0 },
+    "analysis": "点到 y 轴距离等于横坐标的绝对值：|2|=2。",
+    "difficulty": 3,
+    "knowledgePointCodes": ["7B-CH07-KP02"],
+    "abilityTags": ["理解应用"],
+    "usage": "diagnostic",
+    "source": "bank"
+  },
+  {
+    "chapterOrder": 2,
+    "type": "FILL_BLANK",
+    "stem": "点 B 在 x 轴上且横坐标为 -4，则 B 的坐标为 ____。",
+    "answerKey": { "accepted": ["(-4,0)", "（-4,0）"] },
+    "analysis": "在 x 轴上纵坐标为 0，因此 B(-4,0)。",
+    "difficulty": 2,
+    "knowledgePointCodes": ["7B-CH07-KP02"],
+    "abilityTags": ["表示"],
+    "usage": "diagnostic",
+    "source": "bank"
+  }
+]
+
