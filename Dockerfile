@@ -5,6 +5,8 @@
 
 FROM node:20-bookworm-slim AS deps
 WORKDIR /app
+RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list && \
+    sed -i 's|security.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list
 
 # 编译 native 依赖（better-sqlite3 / bcrypt）
 RUN apt-get update && apt-get install -y --no-install-recommends \
