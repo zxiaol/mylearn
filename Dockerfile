@@ -72,4 +72,4 @@ COPY --from=builder /app/prisma ./prisma
 
 USER nodeapp
 EXPOSE 3000
-CMD ["npm", "run", "start"]
+CMD ["sh", "-lc", "npx prisma migrate deploy && npm run start"]

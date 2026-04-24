@@ -10,6 +10,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "db:deploy": "prisma migrate deploy",
+    "db:status": "prisma migrate status",
     "db:seed": "node --import tsx scripts/seed-book.ts && node --import tsx scripts/seed-chapters.ts && node --import tsx scripts/seed-knowledge.ts && node --import tsx scripts/import-questions.ts",
     "smoke:backend": "node --import tsx scripts/smoke-backend.ts",
     "test": "vitest run",
