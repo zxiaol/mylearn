@@ -8,6 +8,9 @@ WORKDIR /app
 RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list && \
     sed -i 's|security.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list
 
+# 确保 optionalDependencies（lightningcss 等平台二进制）会被安装
+ENV NPM_CONFIG_OPTIONAL=true
+
 # 编译 native 依赖（better-sqlite3 / bcrypt）
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
@@ -17,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --include=optional
 
 
 FROM node:20-bookworm-slim AS builder
@@ -25,6 +28,9 @@ WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# 兜底：部分环境下 lightningcss 二进制可能未落盘，显式 rebuild 一次
+RUN npm rebuild lightningcss --foreground-scripts || true
 
 # Prisma Client（构建期生成，确保 runtime 可用）
 RUN npx prisma generate
