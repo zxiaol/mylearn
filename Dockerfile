@@ -42,6 +42,9 @@ COPY . .
 # Next build 期间会执行/评估部分 server 代码（如 NextAuth route），需要 DATABASE_URL 存在
 ENV DATABASE_URL=file:/app/data/prod.db
 
+# 有些项目没有 public/ 目录，但 runner 阶段会 COPY 它；这里确保目录存在
+RUN mkdir -p public
+
 
 # 兜底：部分环境下 lightningcss 二进制可能未落盘，显式 rebuild 一次
 RUN npm rebuild lightningcss --foreground-scripts || true
