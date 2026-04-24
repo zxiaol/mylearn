@@ -28,7 +28,8 @@ RUN npm config set strict-ssl false
 
 # 安装依赖（防卡死）
 COPY package.json package-lock.json ./
-RUN npm ci --include=optional --omit=optional --ignore-scripts
+# 必须允许 postinstall/构建脚本运行，否则 better-sqlite3 等 native 依赖不会生成 .node 绑定文件
+RUN npm ci --include=optional
 
 # Prisma 国内加速
 # RUN npx prisma generate --engine-download-url https://npmmirror.com/mirrors/prisma/engines/

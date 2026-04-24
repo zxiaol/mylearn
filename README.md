@@ -36,7 +36,7 @@ docker run -d --name my_learn \
   -e OPENAI_MODEL_VISION="qwen-vl-plus" \
   -v "/data/mylearn:/app/data" \
   --restart unless-stopped \
-  my_learn:latest
+  mylearn:1.1
 ```
 
 ### 常见调整
