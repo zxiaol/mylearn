@@ -3,15 +3,18 @@
 ## - 使用 Debian slim，避免 alpine/musl 下 better-sqlite3 编译/运行坑
 ## - 运行时将 SQLite 放到 /app/data，建议用 volume 挂载持久化
 
-FROM node:20-bookworm-slim AS deps
+FROM node:22-bookworm-slim AS deps
 WORKDIR /app
-RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list && \
-    sed -i 's|security.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list
 
 # 确保 optionalDependencies（lightningcss 等平台二进制）会被安装
 ENV NPM_CONFIG_OPTIONAL=true
 
 # 编译 native 依赖（better-sqlite3 / bcrypt）
+# 修复：新版 Debian 使用 .sources 文件
+RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list.d/debian.sources && \
+    sed -i 's|security.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list.d/debian.sources
+
+# 编译 native 依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     python3 \
@@ -19,13 +22,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ \
   && rm -rf /var/lib/apt/lists/*
 
+# npm 国内镜像（核心加速）
+RUN npm config set registry https://registry.npmmirror.com
+RUN npm config set strict-ssl false
+
+# 安装依赖（防卡死）
 COPY package.json package-lock.json ./
-RUN npm ci --include=optional
+RUN npm ci --include=optional --omit=optional --ignore-scripts
 
+# Prisma 国内加速
+# RUN npx prisma generate --engine-download-url https://npmmirror.com/mirrors/prisma/engines/
 
-FROM node:20-bookworm-slim AS builder
+FROM node:22-bookworm-slim AS builder
 WORKDIR /app
-
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
@@ -34,35 +43,24 @@ RUN npm rebuild lightningcss --foreground-scripts || true
 
 # Prisma Client（构建期生成，确保 runtime 可用）
 RUN npx prisma generate
-
-# Next.js build（会做类型检查）
 RUN npm run build
 
-
-FROM node:20-bookworm-slim AS runner
+FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-
-# 建议：在部署环境覆盖这些环境变量
 ENV PORT=3000
 ENV NEXTAUTH_URL=http://localhost:3000
-
-# SQLite 默认路径（可用 volume 挂载 /app/data）
 ENV DATABASE_URL=file:/app/data/prod.db
 
 RUN useradd -m -u 1001 nodeapp && mkdir -p /app/data && chown -R nodeapp:nodeapp /app
 
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/next.config.ts ./next.config.ts
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/next.config.ts ./
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/node_modules ./node_modules
-
-# Prisma runtime 需要 schema（用于某些错误信息/引擎行为），保留 prisma 目录
 COPY --from=builder /app/prisma ./prisma
 
 USER nodeapp
 EXPOSE 3000
-
 CMD ["npm", "run", "start"]
-
