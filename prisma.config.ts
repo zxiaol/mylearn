@@ -9,6 +9,7 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // 运行时必须通过环境变量设置，支持默认值作为兜底
+    url: process.env["DATABASE_URL"] ?? "file:/app/data/prod.db",
   },
 });
