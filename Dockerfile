@@ -63,6 +63,9 @@ ENV DATABASE_URL=file:/app/data/prod.db
 
 RUN useradd -m -u 1001 nodeapp && mkdir -p /app/data && chown -R nodeapp:nodeapp /app
 
+# 如果挂载的 volume 覆盖了目录，重新设置权限
+RUN chmod 777 /app/data
+
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/next.config.ts ./
 COPY --from=builder /app/.next ./.next
@@ -73,4 +76,4 @@ COPY --from=builder /app/prisma.config.js ./
 
 USER nodeapp
 EXPOSE 3000
-CMD ["sh", "-lc", "npx prisma migrate deploy && npm run start"]
+CMD ["sh", "-lc", "mkdir -p /app/data && npx prisma migrate deploy && npm run start"]
