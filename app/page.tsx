@@ -1,8 +1,14 @@
 import { ButtonLink, Card, CardBody, Badge } from "@/src/ui/components";
 import { Icons } from "@/src/ui/icons";
 import Link from "next/link";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/src/auth/options";
+import { prisma } from "@/src/db/client";
 
 export default function Home() {
+  const sessionPromise = getServerSession(authOptions);
+  // Keep component sync by awaiting inside (server component).
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   return (
     <main className="bg-soft-gradient">
       <div className="mx-auto max-w-6xl px-4 pb-14 pt-10 sm:px-6">
@@ -19,9 +25,7 @@ export default function Home() {
               清新蓝 + 薄荷绿 + 淡粉点缀的学习空间。先诊断、再辅导、再巩固，让你把薄弱点一口气补齐。
             </p>
             <div className="mt-2 flex flex-wrap gap-3">
-              <ButtonLink href="/register" variant="primary">
-                开始学习 <Icons.ArrowRight className="h-4 w-4" />
-              </ButtonLink>
+              <StartLearningButton sessionPromise={sessionPromise} />
               <ButtonLink href="/login" variant="ghost">
                 我有账号
               </ButtonLink>
@@ -100,6 +104,30 @@ export default function Home() {
         </div>
       </div>
     </main>
+  );
+}
+
+async function StartLearningButton({ sessionPromise }: { sessionPromise: ReturnType<typeof getServerSession> }) {
+  const session = await sessionPromise;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error MVP: extend session user
+  const userId = session?.user?.id as string | undefined;
+
+  if (!userId) {
+    return (
+      <ButtonLink href="/register" variant="primary">
+        开始学习 <Icons.ArrowRight className="h-4 w-4" />
+      </ButtonLink>
+    );
+  }
+
+  const profile = await prisma.studentProfile.findUnique({ where: { userId }, select: { id: true } });
+  const href = profile ? "/map" : `/onboarding?userId=${encodeURIComponent(userId)}`;
+
+  return (
+    <ButtonLink href={href} variant="primary">
+      开始学习 <Icons.ArrowRight className="h-4 w-4" />
+    </ButtonLink>
   );
 }
 

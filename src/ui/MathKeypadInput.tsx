@@ -22,6 +22,13 @@ export function MathKeypadInput({
 
   const keys: Key[] = useMemo(
     () => [
+      { label: "✓", insert: "✓" },
+      { label: "×", insert: "×" },
+      { label: ">", insert: ">" },
+      { label: "<", insert: "<" },
+      { label: "=", insert: "=" },
+      { label: "≥", insert: "≥" },
+      { label: "≤", insert: "≤" },
       { label: "∛( )", insert: "∛()", cursorShift: -1 },
       { label: "√( )", insert: "√()", cursorShift: -1 },
       { label: "^", insert: "^" },

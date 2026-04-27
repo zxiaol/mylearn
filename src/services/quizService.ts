@@ -22,6 +22,33 @@ function normStem(s: string) {
   return s.replace(/\s+/g, " ").trim();
 }
 
+function normFillAnswer(s: string) {
+  let out = s.trim();
+
+  // Strip common math wrappers users may paste/type
+  out = out.replace(/^\$+|\$+$/g, "");
+  out = out.replace(/^\\\(|\\\)$/g, "");
+  out = out.replace(/^\\\[|\\\]$/g, "");
+
+  // Common variants for judgement questions
+  out = out.replace(/[✓✔✅]/g, "√");
+  out = out.replace(/[✗✘❌]/g, "×");
+  out = out.replace(/\b[xX]\b/g, "×");
+
+  // Normalize unicode roots to LaTeX-like canonical form for matching answerKey.accepted.
+  // Examples:
+  // - √[3]{27} / √[3](27) / ∛(27) -> \sqrt[3]{27}
+  // - √(x) / √{x} -> \sqrt{x}
+  out = out.replace(/√\s*\[\s*(\d+)\s*\]\s*[\{\(]\s*([^}\)]+?)\s*[\}\)]/g, String.raw`\sqrt[$1]{$2}`);
+  out = out.replace(/∛\s*[\{\(]\s*([^}\)]+?)\s*[\}\)]/g, String.raw`\sqrt[3]{$1}`);
+  out = out.replace(/√\s*[\{\(]\s*([^}\)]+?)\s*[\}\)]/g, String.raw`\sqrt{$1}`);
+
+  // Normalize punctuation/spaces
+  out = out.replace(/，/g, ",");
+  out = out.replace(/\s+/g, "");
+  return out;
+}
+
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const t = setTimeout(() => reject(new Error("timeout")), ms);
@@ -259,8 +286,9 @@ export async function gradeChoiceOrFill(questionId: string, valueText: string) {
 
   if (q.type === "FILL_BLANK") {
     const key = JSON.parse(q.answerKeyJson) as { accepted?: string[] };
-    const accepted = (key.accepted ?? []).map((s) => s.trim());
-    const ok = accepted.includes(trimmed);
+    const answer = normFillAnswer(trimmed);
+    const accepted = (key.accepted ?? []).map((s) => normFillAnswer(s));
+    const ok = accepted.includes(answer);
     return { isCorrect: ok, score: ok ? 1 : 0, maxScore: 1 };
   }
 
