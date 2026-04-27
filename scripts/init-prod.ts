@@ -1,4 +1,6 @@
 import { spawnSync } from "node:child_process";
+import { access } from "node:fs/promises";
+import path from "node:path";
 import { prisma } from "../src/db/client";
 
 function runScript(tsFile: string) {
@@ -14,6 +16,11 @@ async function main() {
     console.log("[init-prod] INIT_SEED=0, skip seeding");
     return;
   }
+
+  const seedDir = process.env.SEED_DATA_DIR ?? path.join(process.cwd(), "seed-data");
+  await access(path.join(seedDir, "rjb-grade7-sem2", "chapters.json")).catch(() => {
+    throw new Error(`seed_data_missing: ${path.join(seedDir, "rjb-grade7-sem2", "chapters.json")}`);
+  });
 
   const [bookCount, chapterCount, kpCount, questionCount] = await Promise.all([
     prisma.book.count(),

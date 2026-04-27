@@ -1,5 +1,6 @@
 import { prisma } from "../src/db/client";
-import questions from "../data/rjb-grade7-sem2/questions.json";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 
 type QuestionSeed = {
   chapterOrder: number;
@@ -15,15 +16,23 @@ type QuestionSeed = {
   source: string;
 };
 
+async function loadQuestions(): Promise<QuestionSeed[]> {
+  const base = process.env.SEED_DATA_DIR ?? path.join(process.cwd(), "seed-data");
+  const p = path.join(base, "rjb-grade7-sem2", "questions.json");
+  const raw = await readFile(p, "utf-8");
+  return JSON.parse(raw) as QuestionSeed[];
+}
+
 async function main() {
+  const questions = await loadQuestions();
   const book = await prisma.book.findUnique({
     where: { name: "人教版七年级下册数学" },
     select: { id: true },
   });
   if (!book) throw new Error("book_not_seeded");
 
-  for (let idx = 0; idx < (questions as QuestionSeed[]).length; idx++) {
-    const q = (questions as QuestionSeed[])[idx];
+  for (let idx = 0; idx < questions.length; idx++) {
+    const q = questions[idx];
     const chapterId = `${book.id}:${q.chapterOrder}`;
     const kpIds: string[] = [];
     for (const code of q.knowledgePointCodes) {

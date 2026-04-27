@@ -75,8 +75,8 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.js ./
 COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/src ./src
-COPY --from=builder /app/data ./data
+COPY --from=builder /app/data ./seed-data
 
 USER nodeapp
 EXPOSE 3000
-CMD ["sh", "-lc", "mkdir -p /app/data && npx prisma migrate deploy && node --import tsx scripts/init-prod.ts && npm run start"]
+CMD ["sh", "-lc", "set -euo pipefail; echo \"[boot] node=$(node -v)\"; echo \"[boot] DATABASE_URL=${DATABASE_URL:-<unset>}\"; echo \"[boot] checking /app/data writable...\"; mkdir -p /app/data; (test -w /app/data && echo \"[boot] /app/data is writable\" ) || (echo \"[boot][FATAL] /app/data not writable (check volume permissions)\" && ls -ld /app/data && exit 1); echo \"[boot] checking seed data...\"; SEED_DIR=${SEED_DATA_DIR:-/app/seed-data}; if [ ! -f \"$SEED_DIR/rjb-grade7-sem2/chapters.json\" ]; then echo \"[boot][FATAL] seed data missing: $SEED_DIR/rjb-grade7-sem2/chapters.json\"; echo \"[boot] ls -la $SEED_DIR:\"; ls -la \"$SEED_DIR\" || true; exit 1; fi; if [ ! -d /app/prisma/migrations ]; then echo \"[boot][FATAL] prisma migrations missing: /app/prisma/migrations\"; ls -la /app/prisma || true; exit 1; fi; echo \"[boot] migrations present\"; npx prisma migrate deploy; echo \"[boot] init seed (if needed)...\"; node --import tsx scripts/init-prod.ts; echo \"[boot] starting app...\"; npm run start"]
