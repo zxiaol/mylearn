@@ -76,4 +76,4 @@ COPY --from=builder /app/prisma.config.js ./
 
 USER nodeapp
 EXPOSE 3000
-CMD ["sh", "-lc", "mkdir -p /app/data && npx prisma migrate deploy && npm run start"]
+CMD ["sh", "-lc", "mkdir -p /app/data && npx prisma migrate deploy && node --import tsx scripts/init-prod.ts && npm run start"]
